@@ -8,8 +8,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+from sklearn.metrics import precision_recall_curve
 from sklearn.model_selection import GridSearchCV
+import joblib
 
 
 df = pd.read_csv('/mnt/44D2A11AD2A1116A/Studies/INSI/M1/CI-CD/Final_Project/mlops-ci-cd-prediction_churn/dataset/Telco-Customer-Churn.csv')
@@ -125,3 +126,36 @@ final_y_pred_proba = best_model.predict_proba(X_test)[:, 1]
 final_auc_test = roc_auc_score(y_test, final_y_pred_proba)
 
 print(f"AUC-ROC final sur les données de test (avec le meilleur modèle) : {final_auc_test:.4f}")
+
+"""Détermination du seuil optimal basé sur le F1-Score"""
+
+# 1. Calculer les points de la courbe pour tous les seuils
+precision, recall, thresholds = precision_recall_curve(y_test, final_y_pred_proba)
+
+# 2. Calculer le F1-Score pour chaque seuil (F1 est une bonne moyenne entre P et R)
+f1_scores = 2 * (precision * recall) / (precision + recall)
+
+# 3. Trouver l'index du seuil qui maximise le F1-Score
+best_f1_idx = np.argmax(f1_scores)
+best_threshold = thresholds[best_f1_idx]
+
+print(f"Le seuil maximisant le F1-Score est : {best_threshold:.4f}")
+
+# Sauvegarder le modèle entrainé
+
+model_filename = '/mnt/44D2A11AD2A1116A/Studies/INSI/M1/CI-CD/Final_Project/mlops-ci-cd-prediction_churn/model/full_pipeline_xgb_optimized.pkl'
+
+# 1. Sauvegarder la liste des colonnes de X_train
+# Cette liste doit être stockée dans votre objet Joblib ou un fichier séparé.
+train_columns = list(X_train.columns)
+
+# 2. Sauvegarder l'ordre avec le modèle (méthode robuste)
+# Créez un dictionnaire ou un objet à sauvegarder
+metadata = {
+    'model': best_model,
+    'features_order': train_columns
+}
+
+joblib.dump(metadata, model_filename)
+
+print(f"Modèle optimisé sauvegardé sous : {model_filename}")
