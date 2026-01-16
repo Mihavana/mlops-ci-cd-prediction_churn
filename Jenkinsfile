@@ -156,6 +156,9 @@ pipeline {
                 '''
             }
         }
+    }
+    
+    post {
         always {
             script {
                 echo '========== BUILD FINISHED =========='
