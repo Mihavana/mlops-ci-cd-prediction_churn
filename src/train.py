@@ -1,42 +1,33 @@
+"""
+Module d'entraînement du modèle de prédiction de churn client.
+"""
+
 import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import roc_auc_score, precision_recall_curve
 from sklearn.model_selection import GridSearchCV
 import joblib
+from pathlib import Path
+import logging
 
+# Configuration du logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-df = pd.read_csv('/mnt/44D2A11AD2A1116A/Studies/INSI/M1/CI-CD/Final_Project/mlops-ci-cd-prediction_churn/dataset/Telco-Customer-Churn.csv')
+# Chemins par défaut
+DATASET_PATH = Path(__file__).parent.parent / "dataset" / "Telco-Customer-Churn.csv"
+MODEL_PATH = Path(__file__).parent.parent / "model" / "full_pipeline_xgb_optimized.pkl"
 
-# Nettoyage des données
+# Créer le répertoire model s'il n'existe pas
+MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-df = df.drop(columns=['customerID'])
-df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
-
-df_clean = df.dropna()
-
-# Assignation de X et y
-
-X = df_clean.drop('Churn', axis = 1)
-y = df_clean['Churn']
-
-le = LabelEncoder()
-
-y_encoded = le.fit_transform(y)
-
-# Repartir train et test
-
-X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
-
-# Encodage des Données Catégorielles avec OneHotEncoder
-
+# Features catégorielles
 CATEGORIAL_FEATURES = [
     'gender', 'Partner', 'Dependents', 'PhoneService',
     'MultipleLines', 'InternetService', 'OnlineSecurity',
@@ -45,117 +36,291 @@ CATEGORIAL_FEATURES = [
     'PaperlessBilling', 'PaymentMethod'
 ]
 
-categorial_pipeline = Pipeline(steps=[
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
 
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('cat', categorial_pipeline, CATEGORIAL_FEATURES)
-    ],
-    remainder='passthrough'
-)
-
-# Entrainement avex XGBoost
-
-xgb_model = XGBClassifier(
-    objective = 'binary:logistic',
-    eval_metric = 'auc',
-    scale_pos_weight = 2.7, # nombre non-churns/nombre churns
-    random_state = 42
-)
-
-full_pipeline = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('classifier', xgb_model)
-])
-
-# Entrainement
-full_pipeline.fit(X_train, y_train)
-
-# Test de prédiction sur les données tests
-y_pred_proba = full_pipeline.predict_proba(X_test)[:, 1]
-
-# Evaluation de perf
-
-# auc_score = roc_auc_score(y_test, y_pred_proba)
-# print(f"Le score AUC-ROC est : {auc_score:.4f}")
-
-# GridSearch
-param_grid = {
-    # 1. Ajuster l'Ancienneté (Nombre d'arbres)
-    'classifier__n_estimators': [100, 200, 300],
+def load_data(dataset_path=None):
+    """
+    Charge les données du dataset.
     
-    # 2. Ajuster la Complexité (Profondeur max)
-    'classifier__max_depth': [3, 5, 7],
+    Args:
+        dataset_path: Chemin vers le dataset. Si None, utilise le chemin par défaut.
     
-    # 3. Ajuster le Taux d'Apprentissage
-    'classifier__learning_rate': [0.05, 0.1, 0.2],
+    Returns:
+        pd.DataFrame: Les données brutes
+    """
+    if dataset_path is None:
+        dataset_path = DATASET_PATH
     
-    # 4. Ajuster le Poids pour le Déséquilibre (si vous voulez tester d'autres valeurs)
-    # C'est souvent mieux de le calculer et le fixer, mais on peut le faire varier
-    'classifier__scale_pos_weight': [2.5, 2.7, 3.0] 
-}
+    logger.info(f"Chargement des données depuis {dataset_path}")
+    df = pd.read_csv(dataset_path)
+    logger.info(f"Données chargées: {df.shape}")
+    return df
 
-grid_search = GridSearchCV(
-    estimator=full_pipeline, 
-    param_grid=param_grid, 
-    scoring='roc_auc', 
-    cv=5, 
-    verbose=3, 
-    n_jobs=-1  # Utiliser tous les coeurs du processeur
-)
 
-print("Démarrage de la recherche par grille...")
-# La recherche prend en entrée l'ensemble X_train et y_train
-grid_search.fit(X_train, y_train)
+def clean_data(df):
+    """
+    Nettoie les données.
+    
+    Args:
+        df: DataFrame brut
+    
+    Returns:
+        pd.DataFrame: DataFrame nettoyé
+    """
+    logger.info("Nettoyage des données")
+    
+    # Supprimer customerID
+    df = df.drop(columns=['customerID'], errors='ignore')
+    
+    # Convertir TotalCharges en numérique
+    if 'TotalCharges' in df.columns:
+        df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+    
+    # Supprimer les lignes avec valeurs manquantes
+    df_clean = df.dropna()
+    
+    logger.info(f"Données nettoyées: {len(df_clean)} lignes")
+    return df_clean
 
-# Afficher le meilleur score AUC-ROC trouvé
-best_auc = grid_search.best_score_
-print(f"\nMeilleur AUC-ROC trouvé : {best_auc:.4f}")
 
-# Afficher la combinaison d'hyperparamètres qui a donné ce score
-print("Meilleurs hyperparamètres :")
-print(grid_search.best_params_)
+def create_features(df_clean):
+    """
+    Crée les features X et la cible y.
+    
+    Args:
+        df_clean: DataFrame nettoyé
+    
+    Returns:
+        tuple: (X, y_encoded)
+    """
+    logger.info("Création des features")
+    
+    X = df_clean.drop('Churn', axis=1)
+    y = df_clean['Churn']
+    
+    # Encoder la variable cible
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(y)
+    
+    logger.info(f"Features créées: {X.shape[1]} features, {len(y)} samples")
+    return X, y_encoded
 
-# Récupérer le modèle final optimisé
-best_model = grid_search.best_estimator_
 
-# Utiliser ce meilleur modèle pour la prédiction finale sur X_test
-final_y_pred_proba = best_model.predict_proba(X_test)[:, 1]
-final_auc_test = roc_auc_score(y_test, final_y_pred_proba)
+def split_data(X, y, test_size=0.2, random_state=42):
+    """
+    Sépare les données en train et test.
+    
+    Args:
+        X: Features
+        y: Cible
+        test_size: Proportion du test set
+        random_state: Seed pour la reproductibilité
+    
+    Returns:
+        tuple: (X_train, X_test, y_train, y_test)
+    """
+    logger.info(f"Split des données (test_size={test_size})")
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+    
+    logger.info(f"Train: {len(X_train)}, Test: {len(X_test)}")
+    return X_train, X_test, y_train, y_test
 
-print(f"AUC-ROC final sur les données de test (avec le meilleur modèle) : {final_auc_test:.4f}")
 
-"""Détermination du seuil optimal basé sur le F1-Score"""
+def create_preprocessor():
+    """
+    Crée le préprocesseur pour les données catégorielles.
+    
+    Returns:
+        ColumnTransformer: Le préprocesseur
+    """
+    logger.info("Création du préprocesseur")
+    
+    categorial_pipeline = Pipeline(steps=[
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
+    
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', categorial_pipeline, CATEGORIAL_FEATURES)
+        ],
+        remainder='passthrough'
+    )
+    
+    return preprocessor
 
-# 1. Calculer les points de la courbe pour tous les seuils
-precision, recall, thresholds = precision_recall_curve(y_test, final_y_pred_proba)
 
-# 2. Calculer le F1-Score pour chaque seuil (F1 est une bonne moyenne entre P et R)
-f1_scores = 2 * (precision * recall) / (precision + recall)
+def create_pipeline(preprocessor):
+    """
+    Crée le pipeline complet avec préprocesseur et modèle XGBoost.
+    
+    Args:
+        preprocessor: Le préprocesseur ColumnTransformer
+    
+    Returns:
+        Pipeline: Le pipeline complet
+    """
+    logger.info("Création du pipeline")
+    
+    xgb_model = XGBClassifier(
+        objective='binary:logistic',
+        eval_metric='auc',
+        scale_pos_weight=2.7,  # Ratio des classes
+        random_state=42
+    )
+    
+    pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', xgb_model)
+    ])
+    
+    return pipeline
 
-# 3. Trouver l'index du seuil qui maximise le F1-Score
-best_f1_idx = np.argmax(f1_scores)
-best_threshold = thresholds[best_f1_idx]
 
-print(f"Le seuil maximisant le F1-Score est : {best_threshold:.4f}")
+def train_model(X_train, y_train):
+    """
+    Entraîne le modèle avec GridSearch.
+    
+    Args:
+        X_train: Features d'entraînement
+        y_train: Cible d'entraînement
+    
+    Returns:
+        Pipeline: Le modèle optimisé
+    """
+    logger.info("Création du modèle et entraînement")
+    
+    preprocessor = create_preprocessor()
+    pipeline = create_pipeline(preprocessor)
+    
+    # GridSearch
+    param_grid = {
+        'classifier__n_estimators': [100, 200, 300],
+        'classifier__max_depth': [3, 5, 7],
+        'classifier__learning_rate': [0.05, 0.1, 0.2],
+        'classifier__scale_pos_weight': [2.5, 2.7, 3.0]
+    }
+    
+    grid_search = GridSearchCV(
+        estimator=pipeline,
+        param_grid=param_grid,
+        scoring='roc_auc',
+        cv=5,
+        verbose=1,
+        n_jobs=-1
+    )
+    
+    logger.info("Démarrage de la recherche par grille...")
+    grid_search.fit(X_train, y_train)
+    
+    logger.info(f"Meilleur score AUC-ROC: {grid_search.best_score_:.4f}")
+    logger.info(f"Meilleurs hyperparamètres: {grid_search.best_params_}")
+    
+    return grid_search.best_estimator_
 
-# Sauvegarder le modèle entrainé
 
-model_filename = '/mnt/44D2A11AD2A1116A/Studies/INSI/M1/CI-CD/Final_Project/mlops-ci-cd-prediction_churn/model/full_pipeline_xgb_optimized.pkl'
+def evaluate_model(model, X_test, y_test):
+    """
+    Évalue le modèle.
+    
+    Args:
+        model: Le modèle entraîné
+        X_test: Features de test
+        y_test: Cible de test
+    
+    Returns:
+        dict: Métriques d'évaluation
+    """
+    logger.info("Évaluation du modèle")
+    
+    # Prédictions probabilistes
+    y_pred_proba = model.predict_proba(X_test)[:, 1]
+    
+    # Score AUC-ROC
+    auc_score = roc_auc_score(y_test, y_pred_proba)
+    logger.info(f"AUC-ROC: {auc_score:.4f}")
+    
+    # Déterminer le seuil optimal
+    precision, recall, thresholds = precision_recall_curve(y_test, y_pred_proba)
+    f1_scores = 2 * (precision * recall) / (precision + recall)
+    best_f1_idx = np.argmax(f1_scores)
+    best_threshold = thresholds[best_f1_idx]
+    logger.info(f"Seuil optimal (F1): {best_threshold:.4f}")
+    
+    return {
+        'auc_score': auc_score,
+        'best_threshold': best_threshold,
+        'y_pred_proba': y_pred_proba
+    }
 
-# 1. Sauvegarder la liste des colonnes de X_train
-# Cette liste doit être stockée dans votre objet Joblib ou un fichier séparé.
-train_columns = list(X_train.columns)
 
-# 2. Sauvegarder l'ordre avec le modèle (méthode robuste)
-# Créez un dictionnaire ou un objet à sauvegarder
-metadata = {
-    'model': best_model,
-    'features_order': train_columns
-}
+def save_model(model, features, model_path=None):
+    """
+    Sauvegarde le modèle et ses métadonnées.
+    
+    Args:
+        model: Le modèle entraîné
+        features: Liste des noms de features
+        model_path: Chemin de sauvegarde. Si None, utilise le chemin par défaut.
+    """
+    if model_path is None:
+        model_path = MODEL_PATH
+    
+    logger.info(f"Sauvegarde du modèle vers {model_path}")
+    
+    metadata = {
+        'model': model,
+        'features_order': list(features)
+    }
+    
+    joblib.dump(metadata, model_path)
+    logger.info("✓ Modèle sauvegardé avec succès")
 
-joblib.dump(metadata, model_filename)
 
-print(f"Modèle optimisé sauvegardé sous : {model_filename}")
+def train_full_pipeline(dataset_path=None, model_path=None):
+    """
+    Exécute le pipeline complet d'entraînement.
+    
+    Args:
+        dataset_path: Chemin vers le dataset
+        model_path: Chemin de sauvegarde du modèle
+    """
+    # Chargement et nettoyage
+    df = load_data(dataset_path)
+    df_clean = clean_data(df)
+    
+    # Création des features
+    X, y = create_features(df_clean)
+    
+    # Split
+    X_train, X_test, y_train, y_test = split_data(X, y)
+    
+    # Entraînement
+    best_model = train_model(X_train, y_train)
+    
+    # Évaluation
+    metrics = evaluate_model(best_model, X_test, y_test)
+    
+    # Sauvegarde
+    save_model(best_model, X_train.columns, model_path)
+    
+    logger.info("✓ Entraînement complété avec succès!")
+    
+    return best_model, metrics
+
+
+# ============ SCRIPT PRINCIPAL ============
+
+if __name__ == "__main__":
+    logger.info("=" * 60)
+    logger.info("Entraînement du modèle de prédiction de churn")
+    logger.info("=" * 60)
+    
+    try:
+        best_model, metrics = train_full_pipeline()
+        logger.info(f"\nAUC-ROC final: {metrics['auc_score']:.4f}")
+        logger.info(f"Seuil optimal: {metrics['best_threshold']:.4f}")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'entraînement: {e}", exc_info=True)
+        exit(1)

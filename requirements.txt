@@ -6,3 +6,8 @@ scikit-learn
 xgboost
 joblib
 fastapi
+uvicorn
+pytest
+requests
+pydantic
+httpx
