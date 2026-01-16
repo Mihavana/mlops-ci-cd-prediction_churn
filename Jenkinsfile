@@ -11,8 +11,8 @@ pipeline {
     options {
         // Garder les 10 derniers builds
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Timeout de 30 minutes
-        timeout(time: 30, unit: 'MINUTES')
+        // Timeout de 90 minutes
+        timeout(time: 90, unit: 'MINUTES')
         // Timestamps dans les logs
         timestamps()
     }
