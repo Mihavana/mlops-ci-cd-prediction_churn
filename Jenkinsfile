@@ -43,6 +43,15 @@ pipeline {
                 }
             }
         }
+
+        stage('Debug Branch') {
+            steps {
+                sh '''
+                    echo "BRANCH_NAME=$BRANCH_NAME"
+                    echo "GIT_BRANCH=$GIT_BRANCH"
+                '''
+            }
+        }
         
         stage('Code Quality - Linting') {
             steps {
@@ -111,8 +120,8 @@ pipeline {
                     echo '========== DEPLOYMENT =========='
                 }
                 sh '''
-                    docker-compose down || true
-                    docker-compose up -d
+                    docker compose down || true
+                    docker compose up -d
                     sleep 5
                     curl -f http://localhost:8000/health || exit 1
                     echo "✓ API déployée avec succès!"
