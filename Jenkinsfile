@@ -93,8 +93,7 @@ pipeline {
         stage('Build Docker Image') {
             when {
                 expression {
-                    //return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
-                    true
+                    env.GIT_BRANCH?.endsWith('main')
                 }
             }
             steps {
@@ -111,8 +110,7 @@ pipeline {
         stage('Deploy') {
             when {
                 expression {
-                    //return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
-                    true
+                    env.GIT_BRANCH?.endsWith('main')
                 }
             }
             steps {
@@ -122,9 +120,16 @@ pipeline {
                 sh '''
                     docker compose down || true
                     docker compose up -d
-                    sleep 5
-                    curl -f http://localhost:8000/health || exit 1
-                    echo "✓ API déployée avec succès!"
+                    echo "Waiting for API to be ready..."
+                    for i in {1..10}; do
+                        if curl -f http://localhost:8000/health; then
+                            echo "✓ API is ready!"
+                            break
+                        else
+                            echo "Retry $i/10..."
+                            sleep 3
+                        fi
+                    done
                 '''
             }
         }
