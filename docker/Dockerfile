@@ -21,6 +21,8 @@ COPY src/ /app/src/
 COPY dataset/ /app/dataset/
 RUN mkdir -p /app/model/ || true
 
+ENV PYTHONPATH=/app/src
+
 # Exposer le port
 EXPOSE 8000
 
