@@ -139,19 +139,27 @@ pipeline {
                 '''
             }
         }
-    }
-    
-    post {
+        stage('🧹 Cleanup') {
+            when {
+                expression {
+                    return true  // Toujours exécuter
+                }
+            }
+            steps {
+                script {
+                    echo '========== CLEANUP =========='
+                }
+                sh '''
+                    rm -rf venv || true
+                    docker system prune -f || true
+                    echo "✓ Cleanup complété"
+                '''
+            }
+        }
         always {
             script {
-                echo '========== CLEANUP & ARCHIVING =========='
-                sh '''
-                    # Sauvegarder les rapports de couverture
-                    if [ -d htmlcov ]; then
-                        tar -czf coverage-report-${BUILD_NUMBER}.tar.gz htmlcov/
-                        echo "✓ Coverage report archivé"
-                    fi
-                '''
+                echo '========== BUILD FINISHED =========='
+                echo "Build status: ${currentBuild.result}"
             }
         }
         
@@ -159,33 +167,18 @@ pipeline {
             script {
                 echo '✅ PIPELINE RÉUSSI'
             }
-            // Notification de succès (optionnel)
-            // mail to: 'team@example.com',
-            //     subject: "✅ Build réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            //     body: "Build réussi. Logs: ${env.BUILD_URL}"
         }
         
         failure {
             script {
                 echo '❌ PIPELINE ÉCHOUÉ'
             }
-            // Notification d'échec (optionnel)
-            // mail to: 'team@example.com',
-            //     subject: "❌ Build échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            //     body: "Build échoué. Logs: ${env.BUILD_URL}"
         }
         
         unstable {
             script {
                 echo '⚠️ PIPELINE INSTABLE'
             }
-        }
-        
-        cleanup {
-            sh '''
-                rm -rf venv || true
-                docker system prune -f || true
-            '''
         }
     }
 }
