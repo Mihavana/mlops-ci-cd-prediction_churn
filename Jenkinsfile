@@ -17,6 +17,7 @@ pipeline {
         
         // Python
         PYTHON_VERSION = '3'
+    }
     
     options {
         // Garder les 10 derniers builds
