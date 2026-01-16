@@ -18,7 +18,7 @@ pipeline {
     }
     
     stages {
-        stage('🔄 Checkout') {
+        stage('Checkout') {
             steps {
                 script {
                     echo '========== CHECKOUT CODE =========='
@@ -27,7 +27,7 @@ pipeline {
             }
         }
         
-        stage('🔧 Setup Environment') {
+        stage('Setup Environment') {
             steps {
                 script {
                     echo '========== SETUP PYTHON ENVIRONMENT =========='
@@ -44,7 +44,7 @@ pipeline {
             }
         }
         
-        stage('✨ Code Quality - Linting') {
+        stage('Code Quality - Linting') {
             steps {
                 script {
                     echo '========== CODE LINTING (BLACK & PYLINT) =========='
@@ -61,7 +61,7 @@ pipeline {
             }
         }
         
-        stage('🧪 Tests - Unit Tests') {
+        stage('Tests - Unit Tests') {
             steps {
                 script {
                     echo '========== RUNNING UNIT TESTS =========='
@@ -81,9 +81,11 @@ pipeline {
             }
         }
         
-        stage('📦 Build Docker Image') {
+        stage('Build Docker Image') {
             when {
-                branch 'main'
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                }
             }
             steps {
                 script {
@@ -95,10 +97,12 @@ pipeline {
                 '''
             }
         }
-        
-        stage('🚀 Deploy') {
+
+        stage('Deploy') {
             when {
-                branch 'main'
+                expression {
+                    return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                }
             }
             steps {
                 script {
@@ -113,7 +117,7 @@ pipeline {
                 '''
             }
         }
-        stage('🧹 Cleanup') {
+        stage('Cleanup') {
             when {
                 expression {
                     return true  // Toujours exécuter
