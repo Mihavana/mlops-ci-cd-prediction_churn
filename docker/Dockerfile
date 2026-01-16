@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier l'application
 COPY src/ /app/src/
 COPY dataset/ /app/dataset/
-COPY model/ /app/model/ 2>/dev/null || true
+RUN mkdir -p /app/model/ || true
 
 # Exposer le port
 EXPOSE 8000
