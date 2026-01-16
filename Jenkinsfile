@@ -11,7 +11,7 @@ pipeline {
         FULL_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         
         // Python
-        PYTHON_VERSION = '3.13'
+        PYTHON_VERSION = '3'
     }
     
     options {
