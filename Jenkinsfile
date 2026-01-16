@@ -1,22 +1,11 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     
     environment {
         // Configuration Docker
-        DOCKER_REGISTRY = 'docker.io'  // Remplacer par votre registry (DockerHub, ECR, etc.)
-        DOCKER_USERNAME = credentials('docker-username')  // Créer dans Jenkins
-        DOCKER_PASSWORD = credentials('docker-password')
+        DOCKER_REGISTRY = 'docker.io'
         IMAGE_NAME = 'mlops-churn-prediction'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        FULL_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-        
-        // Python
-        PYTHON_VERSION = '3'
     }
     
     options {
@@ -43,7 +32,9 @@ pipeline {
                 script {
                     echo '========== SETUP PYTHON ENVIRONMENT =========='
                     sh '''
-                        python${PYTHON_VERSION} -m venv venv
+                        apt-get update || true
+                        apt-get install -y python3 python3-pip python3-venv || true
+                        python3 -m venv venv
                         . venv/bin/activate
                         pip install --upgrade pip setuptools wheel
                         pip install -r requirements.txt
@@ -92,32 +83,15 @@ pipeline {
         
         stage('📦 Build Docker Image') {
             when {
-                branch 'main'  // Uniquement sur la branche main
+                branch 'main'
             }
             steps {
                 script {
                     echo '========== BUILDING DOCKER IMAGE =========='
                 }
                 sh '''
-                    docker build -f docker/Dockerfile -t ${FULL_IMAGE} .
-                    docker tag ${FULL_IMAGE} ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:latest
-                '''
-            }
-        }
-        
-        stage('🔐 Push to Registry') {
-            when {
-                branch 'main'
-            }
-            steps {
-                script {
-                    echo '========== PUSHING TO DOCKER REGISTRY =========='
-                }
-                sh '''
-                    echo "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USERNAME} --password-stdin ${DOCKER_REGISTRY}
-                    docker push ${FULL_IMAGE}
-                    docker push ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:latest
-                    docker logout ${DOCKER_REGISTRY}
+                    docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
                 '''
             }
         }
@@ -131,15 +105,10 @@ pipeline {
                     echo '========== DEPLOYMENT =========='
                 }
                 sh '''
-                    # Option 1: Déploiement local avec Docker Compose
                     docker-compose down || true
-                    docker-compose pull
                     docker-compose up -d
-                    
-                    # Option 2: Attendre que l'API soit prête
                     sleep 5
                     curl -f http://localhost:8000/health || exit 1
-                    
                     echo "✓ API déployée avec succès!"
                 '''
             }
