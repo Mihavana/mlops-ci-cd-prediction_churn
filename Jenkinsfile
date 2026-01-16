@@ -144,17 +144,15 @@ pipeline {
     post {
         always {
             script {
-                echo '========== CLEANUP =========='
+                echo '========== CLEANUP & ARCHIVING =========='
+                sh '''
+                    # Sauvegarder les rapports de couverture
+                    if [ -d htmlcov ]; then
+                        tar -czf coverage-report-${BUILD_NUMBER}.tar.gz htmlcov/
+                        echo "✓ Coverage report archivé"
+                    fi
+                '''
             }
-            // Archiver les rapports de test
-            junit 'test-results.xml' || true
-            
-            // Archiver les rapports de couverture
-            publishHTML([
-                reportDir: 'htmlcov',
-                reportFiles: 'index.html',
-                reportName: 'Code Coverage Report'
-            ]) || true
         }
         
         success {
