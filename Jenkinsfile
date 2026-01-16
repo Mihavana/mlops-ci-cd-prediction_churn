@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
         // Configuration Docker
@@ -12,7 +17,6 @@ pipeline {
         
         // Python
         PYTHON_VERSION = '3'
-    }
     
     options {
         // Garder les 10 derniers builds
