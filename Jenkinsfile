@@ -84,7 +84,8 @@ pipeline {
         stage('Build Docker Image') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                    //return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                    true
                 }
             }
             steps {
@@ -101,7 +102,8 @@ pipeline {
         stage('Deploy') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                    //return env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'main'
+                    true
                 }
             }
             steps {
