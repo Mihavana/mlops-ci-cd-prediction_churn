@@ -22,6 +22,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY src/ /app/src/
 COPY dataset/ /app/dataset/
 RUN mkdir -p /app/model/ || true
+COPY model/full_pipeline_xgb_optimized.pkl /app/model/full_pipeline_xgb_optimized.pkl
+
+RUN chmod -R 755 /app/model /app/dataset
 
 ENV PYTHONPATH=/app/src
 

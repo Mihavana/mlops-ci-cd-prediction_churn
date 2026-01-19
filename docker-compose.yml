@@ -12,8 +12,8 @@ services:
       - PYTHONUNBUFFERED=1
       - LOG_LEVEL=INFO
     volumes:
-      - ./model:/app/model
-      - ./dataset:/app/dataset
+      - ./model:/app/model:z
+      - ./dataset:/app/dataset:z
     restart: unless-stopped
     networks:
       - churn-network
