@@ -34,7 +34,7 @@ ENV PYTHONPATH=/app/src
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Commande pour démarrer l'API
