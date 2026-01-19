@@ -123,7 +123,7 @@ pipeline {
         stage('Cleanup') {
             when {
                 expression {
-                    return true  // Toujours exécuter
+                    return true
                 }
             }
             steps {
@@ -147,10 +147,10 @@ pipeline {
 
                 // --- NETTOYAGE ---
                 echo "Suppression de l'image de build pour économiser l'espace ..."
-                // On supprime l'image taguée avec le numéro (ex: mlops-churn-prediction:45)
+                // Supprimer l'image taguée avec le numéro (ex: mlops-churn-prediction:45)
                 sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
                 
-                // On nettoie les couches de build résiduelles
+                // Nettoyer les couches de build résiduelles
                 sh "docker image prune -f"
                 // ------------------------------
             }
