@@ -18,14 +18,6 @@ pipeline {
     }
     
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    echo '========== CHECKOUT CODE =========='
-                }
-                checkout scm
-            }
-        }
         
         stage('Setup Environment') {
             steps {
