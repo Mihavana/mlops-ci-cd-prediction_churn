@@ -53,7 +53,7 @@ pipeline {
             }
         }
         
-        /*stage('Tests - Unit Tests') {
+        stage('Tests - Unit Tests') {
             steps {
                 script {
                     echo '========== RUNNING UNIT TESTS =========='
@@ -71,7 +71,7 @@ pipeline {
                     pytest tests/ --cov=src --cov-report=html --cov-report=term
                 '''
             }
-        }*/
+        }
         
         stage('Build Docker Image') {
             when {
