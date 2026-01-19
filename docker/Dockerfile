@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
 # Copier l'application
 COPY src/ /app/src/

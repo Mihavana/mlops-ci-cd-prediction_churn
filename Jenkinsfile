@@ -84,8 +84,9 @@ pipeline {
                     echo '========== BUILDING DOCKER IMAGE =========='
                 }
                 sh '''
-                    docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                    export DOCKER_BUILDKIT=1
+                    
+                    docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
                 '''
             }
         }
