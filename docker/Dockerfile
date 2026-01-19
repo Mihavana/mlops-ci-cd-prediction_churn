@@ -4,6 +4,9 @@ FROM python:3.13-slim
 # Définir le répertoire de travail
 WORKDIR /app
 
+ENV APP_DIR=/app
+ENV PYTHONPATH=/app/src
+
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -19,11 +22,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
 # Copier l'application
+COPY model/full_pipeline_xgb_optimized.pkl /app/model/full_pipeline_xgb_optimized.pkl
 COPY src/ /app/src/
 COPY dataset/ /app/dataset/
 RUN mkdir -p /app/model/ || true
-
-COPY model/full_pipeline_xgb_optimized.pkl /app/model/full_pipeline_xgb_optimized.pkl
 
 RUN chmod -R 755 /app/model /app/dataset
 

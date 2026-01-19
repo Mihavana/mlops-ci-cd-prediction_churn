@@ -9,10 +9,19 @@ import pandas as pd
 import joblib
 from pathlib import Path
 
-# Chemins
-MODEL_DIR = Path(__file__).parent.parent / "model"
+# Le chemin par défaut pour le développement local sur votre PC
+BASE_DIR = Path(__file__).parent.parent 
+# Le chemin dans Docker, via la variable d'environnement (si elle existe)
+DOCKER_APP_DIR = os.environ.get("APP_DIR", "")
+
+# Définition du chemin du modèle
 MODEL_FILENAME = 'full_pipeline_xgb_optimized.pkl'
-MODEL_PATH = MODEL_DIR / MODEL_FILENAME
+
+# Choisir le chemin approprié
+if DOCKER_APP_DIR:
+    MODEL_PATH = Path(DOCKER_APP_DIR) / "model" / MODEL_FILENAME
+else:
+    MODEL_PATH = BASE_DIR / "model" / MODEL_FILENAME
 
 # Seuil optimal déterminé lors de l'entraînement (F1-score)
 OPTIMAL_THRESHOLD = 0.5172
@@ -30,6 +39,11 @@ def load_model(model_path=None):
     """
     if model_path is None:
         model_path = MODEL_PATH
+    
+    if not os.path.exists(model_path):
+        print(f"DEBUG: Le chemin {model_path} n'existe pas!")
+        raise FileNotFoundError(f"Le fichier modèle est introuvable à : {model_path}")
+    
     
     metadata = joblib.load(model_path)
     
