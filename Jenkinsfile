@@ -149,7 +149,7 @@ pipeline {
                 sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
                 
                 // On nettoie les couches de build résiduelles
-                //sh "docker image prune -f"
+                sh "docker image prune -f"
                 // ------------------------------
             }
         }
