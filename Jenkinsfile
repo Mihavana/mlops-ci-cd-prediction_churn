@@ -120,9 +120,11 @@ pipeline {
                 sh '''
                     docker compose down || true
                     docker compose up -d
+
                     echo "Waiting for API to be ready..."
+                    # On exécute le health check depuis le conteneur directement
                     for i in {1..10}; do
-                        if curl -f http://localhost:8000/health; then
+                        if docker exec churn-prediction-api curl -f http://localhost:8000/health; then
                             echo "✓ API is ready!"
                             break
                         else
