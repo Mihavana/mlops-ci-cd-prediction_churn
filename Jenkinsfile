@@ -106,13 +106,14 @@ pipeline {
 
                     echo "Waiting for API to be ready..."
                     # On exécute le health check depuis le conteneur directement
-                    for i in {1..10}; do
-                        if docker exec churn-prediction-api curl -f http://localhost:8000/health; then
+                    for i in 1 2 3 4 5 6 7 8 9 10; do
+                        if docker exec churn-prediction-api python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" > /dev/null 2>&1; then
                             echo "✓ API is ready!"
+                            success=1
                             break
                         else
-                            echo "Retry $i/10..."
-                            sleep 3
+                            echo "Retry $i/10... (API not ready yet)"
+                            sleep 5
                         fi
                     done
                 '''
