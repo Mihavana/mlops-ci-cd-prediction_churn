@@ -1,17 +1,19 @@
 # Utiliser une image Python 3.13 légère
-FROM python:3.13-slim
+FROM python:3.13-slim-bullseye
 
 # Définir le répertoire de travail
 WORKDIR /app
-
 ENV APP_DIR=/app
 ENV PYTHONPATH=/app/src
 
 # Installer les dépendances système
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    curl \
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copier les requirements
@@ -19,8 +21,9 @@ COPY requirements.txt .
 
 # Installer les dépendances Python
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r requirements.txt
-
+    pip install --upgrade pip \
+    && pip install --upgrade --no-cache-dir -r requirements.txt
+    
 # Copier l'application
 COPY model/full_pipeline_xgb_optimized.pkl /app/model/full_pipeline_xgb_optimized.pkl
 COPY src/ /app/src/

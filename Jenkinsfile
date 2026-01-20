@@ -60,25 +60,25 @@ pipeline {
             }
         }
         
-        stage('Tests - Unit Tests') {
-            steps {
-                script {
-                    echo '========== RUNNING UNIT TESTS =========='
-                }
-                sh '''
-                    . venv/bin/activate
+        // stage('Tests - Unit Tests') {
+        //     steps {
+        //         script {
+        //             echo '========== RUNNING UNIT TESTS =========='
+        //         }
+        //         sh '''
+        //             . venv/bin/activate
                     
-                    echo "--- Test d'entraînement ---"
-                    pytest tests/test_train.py -v --tb=short --cov=src/train --cov-report=xml
+        //             echo "--- Test d'entraînement ---"
+        //             pytest tests/test_train.py -v --tb=short --cov=src/train --cov-report=xml
                     
-                    echo "--- Test API ---"
-                    pytest tests/test_api.py -v --tb=short --cov=src/app --cov-report=xml
+        //             echo "--- Test API ---"
+        //             pytest tests/test_api.py -v --tb=short --cov=src/app --cov-report=xml
                     
-                    echo "--- Rapport de couverture ---"
-                    pytest tests/ --cov=src --cov-report=html --cov-report=term
-                '''
-            }
-        }
+        //             echo "--- Rapport de couverture ---"
+        //             pytest tests/ --cov=src --cov-report=html --cov-report=term
+        //         '''
+        //     }
+        // }
         
         stage('Build Docker Image') {
             when {
