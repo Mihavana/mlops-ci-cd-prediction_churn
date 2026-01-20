@@ -8,7 +8,7 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
 
         // Configuration Harbor
-        HARBOR_REGISTRY = '192.168.1.201'
+        HARBOR_REGISTRY = '192.168.1.201:80'
         PROJECT_NAME = 'mlops-project'
         REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"
     }
