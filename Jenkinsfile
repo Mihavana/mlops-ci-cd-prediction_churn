@@ -122,7 +122,11 @@ pipeline {
         }
 
         stage('Push to Harbor') {
-            when { branch 'main' }
+            when {
+                expression {
+                    env.GIT_BRANCH?.endsWith('main')
+                }
+            }
             steps {
                 script {
                     echo '========== PUSHING TO HARBOR =========='
