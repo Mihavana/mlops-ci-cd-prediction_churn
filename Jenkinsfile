@@ -126,7 +126,7 @@ pipeline {
                         echo "${HARBOR_CREDS_PSW}" | docker login ${HARBOR_REGISTRY} -u "${HARBOR_CREDS_USR}" --password-stdin
                         docker push ${REGISTRY_PATH}:${IMAGE_TAG}
                         docker push ${REGISTRY_PATH}:latest
-                        docker logout ${HARBOR_URL}
+                        docker logout ${HARBOR_REGISTRY}
                     """
                 }
             }
