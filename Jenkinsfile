@@ -108,7 +108,8 @@ pipeline {
                     sh """
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v /tmp/trivy-cache:/root/.cache \
+                            -v /tmp/trivy-cache:/tmp/trivy-cache \
+                            -e TRIVY_CACHE_DIR=/tmp/trivy-cache \
                             aquasec/trivy:latest image \
                             --scanners vuln \
                             --ignore-unfixed \
