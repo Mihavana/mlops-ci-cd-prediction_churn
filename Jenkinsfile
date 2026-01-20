@@ -105,13 +105,10 @@ pipeline {
                     // On lance un conteneur Trivy qui scanne l'image construite à l'étape précédente
                     // On monte le socket docker pour que Trivy puisse accéder aux images locales
 
-                    sh "mkdir -p ${WORKSPACE}/trivy-cache"
-
                     sh """
                         docker run --rm \
-                            -u root \
                             -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v ${WORKSPACE}/trivy-cache:/root/.cache \
+                            -v /tmp/trivy-cache:/root/.cache \
                             aquasec/trivy:latest image \
                             --scanners vuln \
                             --ignore-unfixed \
