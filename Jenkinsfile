@@ -101,6 +101,7 @@ pipeline {
                 expression {
                     env.GIT_BRANCH?.endsWith('main')
                 }
+            }
             steps {
                 script {
                     echo '========== SCANNING IMAGE WITH TRIVY (DOCKER) =========='
