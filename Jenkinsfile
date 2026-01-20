@@ -10,9 +10,7 @@ pipeline {
         // Configuration Harbor
         HARBOR_REGISTRY = '192.168.1.201'
         PROJECT_NAME = 'mlops-project'
-        REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"        
-        // Identifiants Jenkins
-        HARBOR_CREDS = credentials('harbor-creds')
+        REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"
     }
     
     options {
@@ -99,6 +97,10 @@ pipeline {
         }
 
         stage('Security Scan - Trivy') {
+            when {
+                expression {
+                    env.GIT_BRANCH?.endsWith('main')
+                }
             steps {
                 script {
                     echo '========== SCANNING IMAGE WITH TRIVY (DOCKER) =========='
@@ -134,12 +136,20 @@ pipeline {
                     sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_PATH}:${IMAGE_TAG}"
                     sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_PATH}:latest"
                     
-                    sh """
-                        echo "${HARBOR_CREDS_PSW}" | docker login ${HARBOR_REGISTRY} -u "${HARBOR_CREDS_USR}" --password-stdin
-                        docker push ${REGISTRY_PATH}:${IMAGE_TAG}
-                        docker push ${REGISTRY_PATH}:latest
-                        docker logout ${HARBOR_REGISTRY}
-                    """
+                    withCredentials([usernamePassword(
+                        credentialsId: 'harbor-creds',
+                        usernameVariable: 'HARBOR_USER',
+                        passwordVariable: 'HARBOR_PASS'
+                    )]) {
+                        sh """
+                            set +x  # Désactive l'affichage des commandes pour masquer le mot de passe
+                            echo "\${HARBOR_PASS}" | docker login ${HARBOR_REGISTRY} -u "\${HARBOR_USER}" --password-stdin
+                            set -x  # Réactive l'affichage
+                            docker push ${REGISTRY_PATH}:${IMAGE_TAG}
+                            docker push ${REGISTRY_PATH}:latest
+                            docker logout ${HARBOR_REGISTRY}
+                        """
+                    }
                 }
             }
         }
