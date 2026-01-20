@@ -111,7 +111,7 @@ pipeline {
                             aquasec/trivy:latest image \
                             --severity HIGH,CRITICAL \
                             --exit-code 1 \
-                            ${REGISTRY_PATH}:${IMAGE_TAG}
+                            ${IMAGE_NAME}:${IMAGE_TAG}
                     """
                 }
             }
@@ -122,6 +122,10 @@ pipeline {
             steps {
                 script {
                     echo '========== PUSHING TO HARBOR =========='
+
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_PATH}:${IMAGE_TAG}"
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_PATH}:latest"
+                    
                     sh """
                         echo "${HARBOR_CREDS_PSW}" | docker login ${HARBOR_REGISTRY} -u "${HARBOR_CREDS_USR}" --password-stdin
                         docker push ${REGISTRY_PATH}:${IMAGE_TAG}
