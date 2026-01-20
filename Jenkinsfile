@@ -6,6 +6,16 @@ pipeline {
         DOCKER_REGISTRY = 'docker.io'
         IMAGE_NAME = 'mlops-churn-prediction'
         IMAGE_TAG = "${BUILD_NUMBER}"
+
+        // Configuration Harbor
+        HARBOR_REGISTRY = '192.168.1.201'
+        PROJECT_NAME = 'mlops-project'
+        IMAGE_NAME = 'mlops-churn-prediction'
+        REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        
+        // Identifiants Jenkins
+        HARBOR_CREDS = credentials('harbor-creds')
     }
     
     options {
@@ -88,6 +98,40 @@ pipeline {
                     
                     docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
                 '''
+            }
+        }
+
+        stage('Security Scan - Trivy') {
+            steps {
+                script {
+                    echo '========== SCANNING IMAGE WITH TRIVY (DOCKER) =========='
+                    // On lance un conteneur Trivy qui scanne l'image construite à l'étape précédente
+                    // On monte le socket docker pour que Trivy puisse accéder aux images locales
+                    sh """
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v \$HOME/.cache:/root/.cache/ \
+                            aquasec/trivy:latest image \
+                            --severity HIGH,CRITICAL \
+                            --exit-code 1 \
+                            ${REGISTRY_PATH}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Push to Harbor') {
+            when { branch 'main' }
+            steps {
+                script {
+                    echo '========== PUSHING TO HARBOR =========='
+                    sh """
+                        echo "${HARBOR_CREDS_PSW}" | docker login ${HARBOR_URL} -u "${HARBOR_CREDS_USR}" --password-stdin
+                        docker push ${REGISTRY_PATH}:${IMAGE_TAG}
+                        docker push ${REGISTRY_PATH}:latest
+                        docker logout ${HARBOR_URL}
+                    """
+                }
             }
         }
 

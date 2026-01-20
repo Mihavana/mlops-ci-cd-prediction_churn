@@ -28,8 +28,6 @@ COPY dataset/ /app/dataset/
 
 RUN chmod -R 755 /app/model /app/dataset
 
-ENV PYTHONPATH=/app/src
-
 # Exposer le port
 EXPOSE 8000
 
