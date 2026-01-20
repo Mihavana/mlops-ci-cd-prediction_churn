@@ -106,6 +106,11 @@ pipeline {
                     // On monte le socket docker pour que Trivy puisse accéder aux images locales
 
                     sh """
+                        mkdir -p /tmp/trivy-cache
+                        chmod -R 777 /tmp/trivy-cache
+                    """
+
+                    sh """
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v /tmp/trivy-cache:/tmp/trivy-cache \
