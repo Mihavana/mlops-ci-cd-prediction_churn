@@ -1,6 +1,5 @@
 # Utiliser une image Python 3.13 légère
-FROM python:3.13-slim-bullseye
-
+FROM python:3.13-slim-bookworm
 # Définir le répertoire de travail
 WORKDIR /app
 ENV APP_DIR=/app

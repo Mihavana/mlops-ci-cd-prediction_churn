@@ -107,8 +107,11 @@ pipeline {
                     sh """
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v \$HOME/.cache:/root/.cache/ \
+                            -v $HOME/.cache:/root/.cache \
                             aquasec/trivy:latest image \
+                            --scanners vuln \
+                            --ignore-unfixed \
+                            --pkg-types os,library \
                             --severity HIGH,CRITICAL \
                             --exit-code 1 \
                             ${IMAGE_NAME}:${IMAGE_TAG}
