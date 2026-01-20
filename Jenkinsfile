@@ -11,9 +11,7 @@ pipeline {
         HARBOR_REGISTRY = '192.168.1.201'
         PROJECT_NAME = 'mlops-project'
         IMAGE_NAME = 'mlops-churn-prediction'
-        REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"
-        IMAGE_TAG = "${BUILD_NUMBER}"
-        
+        REGISTRY_PATH = "${HARBOR_REGISTRY}/${PROJECT_NAME}/${IMAGE_NAME}"        
         // Identifiants Jenkins
         HARBOR_CREDS = credentials('harbor-creds')
     }
