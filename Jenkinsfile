@@ -112,8 +112,9 @@ pipeline {
 
                     sh """
                         docker run --rm \
+                            --privileged \
                             -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v /tmp/trivy-cache:/tmp/trivy-cache \
+                            -v /tmp/trivy-cache:/tmp/trivy-cache:z \
                             -e TRIVY_CACHE_DIR=/tmp/trivy-cache \
                             aquasec/trivy:latest image \
                             --scanners vuln \
