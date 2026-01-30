@@ -87,3 +87,11 @@ pour le stockage des images Docker générées par le pipeline CI/CD.
 ```bash
 git clone https://github.com/Mihavana/mlops-ci-cd-prediction_churn.git
 cd mlops-ci-cd-prediction_churn
+```
+
+### Lien vers un tutoriel pour installer Harbor via Docker sur Linux
+
+```bash
+https://github.com/LinuxNetHelp/Harbor-Docker-Image-Ubuntu24
+
+```
