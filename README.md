@@ -1,53 +1,90 @@
-# mlops-ci-cd-prediction_churn
+# 📊 Telco Customer Churn Prediction – CI/CD & MLOps Project
 
-Application ML Ops pour la prédiction du churn client avec modèle XGBoost, API FastAPI et pipeline CI/CD.
+Ce projet a pour objectif de concevoir et d’industrialiser un modèle de
+**prédiction du churn client** à partir du dataset **Telco Customer Churn**,
+en appliquant les principes du **DevOps** et du **MLOps**.
 
-## Description
+La solution intègre :
+- un modèle de Machine Learning basé sur **XGBoost**
+- une API de prédiction
+- une chaîne **CI/CD avec Jenkins**
+- une infrastructure **Dockerisée**
+- un registre d’images **Harbor local**
 
-Ce projet est une application complète de Machine Learning Ops (MLOps) qui :
-- **Entraîne** un modèle XGBoost pour prédire le churn client
-- **Expose** une API REST FastAPI pour les prédictions
-- **Déploie** l'application via Docker et Docker Compose
-- **Automatise** le CI/CD avec Jenkins
+---
 
-Dataset utilisé: [Telco Customer Churn](https://www.kaggle.com/blastchar/telco-customer-churn)
+## 🎯 Objectifs du projet
 
-## Démarrage rapide
+- Prédire le churn client (classification binaire)
+- Industrialiser le cycle de vie d’un modèle ML
+- Automatiser les tests, le build et le déploiement
+- Garantir la reproductibilité de l’environnement
+- Illustrer un cas concret MLOps niveau Master
 
-### Entraîner le modèle
-```bash
-python src/train.py
+---
+
+## 🧠 Modèle de Machine Learning
+
+- Type : Classification binaire (churn / non churn)
+- Algorithme : **XGBoost**
+- Librairies : scikit-learn, xgboost
+- Métriques :
+  - Accuracy
+  - Precision
+  - Recall (prioritaire pour la classe churn)
+  - F1-score
+
+---
+
+## 🏗️ Architecture du projet
+
+```
+    dataset/
+    docker/
+    │ └── Dockerfile
+    Docker jenkins/
+    │ ├── Dockerfile
+    │ └── docker-compose.yml
+    docs/
+    │ ├── architecture.md
+    │ ├── cahier_des_charges.md
+    │ └── rapport_final.md
+    model/
+    src/
+    │ ├── app.py
+    │ ├── predict.py
+    │ └── train.py
+    tests/
+    │ ├── test_api.py
+    │ └── test_train.py
+    docker-compose.yml
+    Jenkinsfile
+    requirements.txt
+    README.md
 ```
 
-### Exécuter l'API
+
+---
+
+## ⚙️ Prérequis
+
+Avant de démarrer le projet, les outils suivants doivent être installés
+et fonctionnels localement :
+
+- **Docker**
+- **Docker Compose**
+- **Harbor (registre Docker local)**
+- **Git**
+- Environnement Linux recommandé
+
+⚠️ Le projet suppose que **Harbor est accessible localement**
+pour le stockage des images Docker générées par le pipeline CI/CD.
+
+---
+
+## 🚀 Démarrage du projet
+
+### 1️⃣ Cloner le dépôt
 ```bash
-python -m uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Avec Docker
-```bash
-docker-compose up --build
-```
-
-## API Endpoints
-
-- `GET /health` - Vérifier la santé
-- `POST /predict` - Prédiction simple
-- `POST /predict-batch` - Prédictions en batch
-- `GET /features` - Lister les features
-
-Documentation: http://localhost:8000/docs
-
-## Tests
-```bash
-pytest
-```
-
-## Dépendances
-- fastapi
-- uvicorn
-- xgboost
-- scikit-learn
-- pandas
-- numpy
-- pytest
+git clone https://github.com/Mihavana/mlops-ci-cd-prediction_churn.git
+cd mlops-ci-cd-prediction_churn
