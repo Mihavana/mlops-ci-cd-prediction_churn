@@ -44,6 +44,7 @@ docs/
 ## 3. Composants techniques
 
 - Langage : Python
+- Modèle de classification : XGBoost
 - Framework API : Flask / FastAPI
 - Tests : Pytest
 - Conteneurisation : Docker
