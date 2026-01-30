@@ -1,6 +1,6 @@
 # Pipeline Jenkins CI/CD - Architecture
 
-## 🔄 Vue d'ensemble du Pipeline
+## Vue d'ensemble du Pipeline
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
