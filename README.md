@@ -83,9 +83,7 @@ pour le stockage des images Docker générées par le pipeline CI/CD.
 
 ---
 
-## 🚀 Démarrage du projet
-
-### 1️⃣ Cloner le dépôt
+### Cloner le dépôt
 ```bash
 git clone https://github.com/Mihavana/mlops-ci-cd-prediction_churn.git
 cd mlops-ci-cd-prediction_churn
