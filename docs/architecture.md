@@ -56,14 +56,76 @@ docs/
 
 ## 4. Pipeline CI/CD (Jenkins)
 
-Le pipeline CI/CD est défini dans le fichier `Jenkinsfile`.
+Le pipeline CI/CD est défini dans le fichier `Jenkinsfile`
+et implémente une approche **CI/CD as Code**.
 
-Étapes principales :
-1. Récupération du code source
-2. Installation des dépendances
-3. Exécution des tests unitaires
-4. Build de l’image Docker
-5. Lancement de l’application via Docker Compose
+Il est déclenché automatiquement lors d’un push sur la branche `main`
+et permet d’automatiser l’ensemble du cycle de vie de l’application
+de prédiction du churn.
+
+### Étapes du pipeline
+
+1. **Préparation de l’environnement**
+   - Installation de Python et des outils nécessaires
+   - Création d’un environnement virtuel (venv)
+   - Installation des dépendances du projet
+
+2. **Contrôle qualité du code**
+   - Vérification du formatage avec *Black*
+   - Analyse statique du code avec *Pylint*
+   - Ces étapes permettent d’assurer la maintenabilité du code
+     sans bloquer le pipeline en cas d’avertissements mineurs
+
+3. **Tests unitaires**
+   - Tests du pipeline d’entraînement du modèle
+   - Tests des endpoints de l’API de prédiction
+   - Génération de rapports de couverture de code  
+   *(Étape optionnelle activable selon le contexte)*
+
+4. **Construction de l’image Docker**
+   - Build de l’image applicative à partir du Dockerfile
+   - Taggage de l’image avec le numéro de build Jenkins
+   - Génération d’un tag `latest`
+
+5. **Analyse de sécurité**
+   - Scan de l’image Docker avec *Trivy*
+   - Détection des vulnérabilités critiques et élevées
+   - Échec du pipeline en cas de vulnérabilités bloquantes
+
+6. **Publication de l’image**
+   - Push de l’image Docker vers un registre privé **Harbor**
+   - Authentification sécurisée via les credentials Jenkins
+
+7. **Déploiement automatisé**
+   - Déploiement de l’application via Docker Compose
+   - Arrêt des conteneurs existants
+   - Redémarrage avec la nouvelle version de l’image
+   - Vérification de la disponibilité de l’API via un healthcheck
+
+8. **Nettoyage**
+   - Suppression de l’environnement virtuel
+   - Nettoyage des images Docker temporaires
+   - Optimisation de l’espace disque sur l’agent Jenkins
+
+---
+
+### Déclenchement conditionnel
+
+Les étapes critiques (build, scan, push, déploiement) sont exécutées
+uniquement lors des commits sur la branche `main`,
+afin de respecter une stratégie de déploiement contrôlée.
+
+---
+
+### Sécurité
+
+- Secrets gérés via Jenkins Credentials
+- Authentification sécurisée au registre Harbor
+- Scan de vulnérabilités intégré au pipeline (Trivy)
+
+Ce pipeline illustre une approche **CI/CD orientée MLOps et DevSecOps**,
+adaptée à un contexte académique de niveau Master.
+
 
 ---
 
