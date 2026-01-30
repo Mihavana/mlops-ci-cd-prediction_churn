@@ -57,7 +57,7 @@ La solution intègre :
     tests/
     │ ├── test_api.py
     │ └── test_train.py
-    docker-compose.yml
+    docker-compose-local.yml
     Jenkinsfile
     requirements.txt
     README.md
