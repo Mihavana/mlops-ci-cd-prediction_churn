@@ -73,6 +73,7 @@ et fonctionnels localement :
 
 - **Docker**
 - **Docker Compose**
+- **Jenkins (Docker)**
 - **Harbor (registre Docker local)**
 - **Git**
 - Environnement Linux recommandé
