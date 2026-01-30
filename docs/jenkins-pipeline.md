@@ -31,24 +31,24 @@
     └─ Health check
 ```
 
-## 📊 Stages du Pipeline
+## Stages du Pipeline
 
-### Stage 1: 🔄 Checkout
+### Stage 1: Checkout
 - Clone le repository
 - Utilise les credentials configurés
 - Récupère le code source
 
-### Stage 2: 🔧 Setup Environment
+### Stage 2: Setup Environment
 - Crée un virtualenv Python 3.13
 - Installe toutes les dépendances
 - Installe les outils dev (black, pylint, pytest-cov)
 
-### Stage 3: ✨ Code Quality - Linting
+### Stage 3: Code Quality - Linting
 - **Black**: Formate le code Python
 - **Pylint**: Analyse statique du code
 - Exit code 0 (warnings non bloquants)
 
-### Stage 4: 🧪 Tests - Unit Tests
+### Stage 4: Tests - Unit Tests
 - Exécute `test_train.py` (15 tests)
   - Chargement données
   - Nettoyage
@@ -69,7 +69,7 @@ test_api.py::... PASSED
 Coverage: 85%+
 ```
 
-### Stage 5: 📦 Build Docker Image
+### Stage 5: Build Docker Image
 **Condition:** Branche `main` uniquement
 
 Actions:
@@ -82,7 +82,7 @@ docker build -f docker/Dockerfile -t docker.io/user/mlops-churn:123 .
 docker tag docker.io/user/mlops-churn:123 docker.io/user/mlops-churn:latest
 ```
 
-### Stage 6: 🔐 Push to Registry
+### Stage 6: Push to Registry
 **Condition:** Branche `main` uniquement
 
 Actions:
@@ -91,7 +91,7 @@ Actions:
 - Push `mlops-churn:latest`
 - Logout
 
-### Stage 7: 🚀 Deploy
+### Stage 7: Deploy
 **Condition:** Branche `main` uniquement
 
 Actions:
@@ -101,7 +101,7 @@ Actions:
 - Vérifie health check `/health`
 - Confirme déploiement
 
-## 🎯 Workflow Complet
+## Workflow Complet
 
 ```
 Developer              Git Repository         Jenkins Server          Docker Registry
@@ -126,7 +126,7 @@ Developer              Git Repository         Jenkins Server          Docker Reg
     │                       │                      │                        │
 ```
 
-## 🔐 Sécurité
+## Sécurité
 
 ### Credentials
 - Docker credentials en Secrets
@@ -138,7 +138,7 @@ Developer              Git Repository         Jenkins Server          Docker Reg
 - Déploiement automatique + manuel
 - Audit trail de tous les builds
 
-## 📈 Métriques & Reports
+## Métriques & Reports
 
 ### Coverage Report
 ```
@@ -160,7 +160,7 @@ Temps estimé:
 - Push & Deploy: ~1 minute
 - **Total: ~7 minutes**
 
-## ⚙️ Customisation
+## Customisation
 
 ### Modifier le registry Docker
 ```groovy
@@ -189,7 +189,7 @@ slackSend(channel: '#jenkins', message: '...')
 emailext(subject: '...', to: 'email@example.com')
 ```
 
-## 🔔 Monitoring
+## Monitoring
 
 Consulter dans Jenkins:
 1. **Build Status**: ✅ Success / ❌ Failed / ⚠️ Unstable
@@ -198,7 +198,7 @@ Consulter dans Jenkins:
 4. **Test Results**: Résultats JUnit
 5. **Artifacts**: Images Docker, rapports
 
-## 🚨 Dépannage
+## Dépannage
 
 | Problème | Solution |
 |----------|----------|
@@ -208,7 +208,7 @@ Consulter dans Jenkins:
 | Push échoue | Vérifier credentials Docker |
 | Health check échoue | API pas démarrée, check docker logs |
 
-## ✅ Checklist de déploiement
+## Checklist de déploiement
 
 - [ ] Jenkins installé et configuré
 - [ ] Plugins nécessaires installés
@@ -222,4 +222,4 @@ Consulter dans Jenkins:
 
 ---
 
-**Prêt pour le CI/CD en production!** 🎉
+**Prêt pour le CI/CD en production!**
