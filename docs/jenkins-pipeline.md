@@ -29,11 +29,6 @@
     ├─ Pull latest image
     ├─ Update docker-compose
     └─ Health check
-    ↓
-8️⃣  NOTIFICATIONS
-    ├─ Email (optionnel)
-    ├─ Slack (optionnel)
-    └─ Jenkins UI
 ```
 
 ## 📊 Stages du Pipeline
@@ -129,8 +124,6 @@ Developer              Git Repository         Jenkins Server          Docker Reg
     │                       │      Deploy          │<──── docker pull ─────┤
     │                       │<─────────────────────┤                        │
     │                       │                      │                        │
-    ✓ Build Success        │      Notification    │                        │
-    │<─────────────────────┤<─────────────────────┤                        │
 ```
 
 ## 🔐 Sécurité

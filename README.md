@@ -8,7 +8,7 @@ Ce projet est une application complète de Machine Learning Ops (MLOps) qui :
 - **Entraîne** un modèle XGBoost pour prédire le churn client
 - **Expose** une API REST FastAPI pour les prédictions
 - **Déploie** l'application via Docker et Docker Compose
-- **Automatise** le CI/CD avec GitHub Actions
+- **Automatise** le CI/CD avec Jenkins
 
 Dataset utilisé: [Telco Customer Churn](https://www.kaggle.com/blastchar/telco-customer-churn)
 
