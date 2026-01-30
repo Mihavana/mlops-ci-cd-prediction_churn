@@ -48,6 +48,7 @@ La solution intègre :
     docs/
     │ ├── architecture.md
     │ ├── cahier_des_charges.md
+    │ ├── jenkins-pipeline.md
     │ └── rapport_final.md
     model/
     src/
